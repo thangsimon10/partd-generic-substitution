@@ -4,40 +4,43 @@
 
 Built from CMS Medicare Part D prescriber data (DY2023 + DY2024, 54.8M rows), classified against the FDA Orange Book.
 
+![Change in brand share by molecule, DY2023 to DY2024](fig1_brand_share_change_1.png)
+
 ## The answer
 
 Target **icosapent ethyl (Vascepa)** among internal medicine and family practice.
 
 At a 25% substitution rate: **~$40M** from those two specialties, **~$71M** across all of them. National Part D basis, gross of manufacturer rebates.
 
-Full reasoning in `memo.md`.
+Full reasoning in [memo.md](memo.md). The savings model is in [the Excel workbook](Part%20D%20generic%20substitution%20analysis.xlsx) - the conversion rate sits in an editable cell, so you can substitute your own and watch every figure move.
 
 ## Why not the biggest number
 
-Ranked by gross opportunity, the winner is lenalidomide at $891M — and it is close to unactionable. Revlimid is REMS-restricted, distributed through specialty pharmacy, prescribed by oncologists, and its generic supply is capped by patent settlement. Prescriber outreach cannot move it.
+Ranked by gross opportunity, the winner is lenalidomide at $891M - and it is close to unactionable. Revlimid is REMS-restricted, distributed through specialty pharmacy, prescribed by oncologists, and its generic supply is capped by patent settlement. Prescriber outreach cannot move it.
 
 The criterion that actually sorted the list was different: **is the market already converting without us?**
 
-| Molecule | Brand share change, DY2023 to DY2024 |
-| --- | --- |
-| Teriflunomide | -38.9 pp |
-| Lenalidomide | -10.5 pp |
-| Glatiramer acetate | -7.2 pp |
-| Dimethyl fumarate | -5.7 pp |
-| Tiotropium | -4.7 pp |
-| **Icosapent ethyl** | **+2.2 pp** |
+The chart above is that question answered. Every red bar is a molecule going generic on its own - teriflunomide lost 38.9 points of brand share in a single year. A campaign aimed at any of them reports a win that was going to happen anyway.
 
-A campaign aimed at a falling molecule reports a win that was going to happen anyway. Icosapent ethyl is the only large candidate whose brand share is rising, on 1.81M brand fills with a $156 per-fill gap and AB-rated generics long on the market.
+Icosapent ethyl is the one bar going the other way: **+2.2 points**, on 1.81M brand fills, with AB-rated generics long on the market.
+
+![Brand vs generic cost per 30-day fill](fig2_price_gap.png)
+
+A **$156 gap** per 30-day fill, and the comparison is like-for-like: Vascepa and its generics are marketed at the same strengths and dosage forms.
+
+![Estimated savings by prescriber specialty](fig3_savings_by_specialty_1.png)
+
+Internal medicine and family practice write 57% of the brand volume, so the campaign has a reachable target rather than a diffuse one.
 
 ## Two traps this analysis handles
 
-**The CMS file has no brand/generic indicator.** Its Brnd_Name column is populated on generic rows too, carrying a variant spelling of the generic name - Brnd_Name "Lovastatin" against Gnrc_Name "LOVASTATIN" is a generic. Any name-comparison rule misclassifies in the direction that inflates savings. Classification comes from the FDA Orange Book application type (NDA vs ANDA) instead. See `metric_dictionary.md`, metric 6.
+**The CMS file has no brand/generic indicator.** Its Brnd_Name column is populated on generic rows too, carrying a variant spelling of the generic name - Brnd_Name "Lovastatin" against Gnrc_Name "LOVASTATIN" is a generic. Any name-comparison rule misclassifies in the direction that inflates savings. Classification comes from the FDA Orange Book application type (NDA vs ANDA) instead. See [metric_dictionary.md](metric_dictionary.md), metric 6.
 
 **CMS carries no strength field.** Bimatoprost looked like a $468M opportunity until strength-level checking showed the cheap "generic" in the average was a 0.03% product that cannot be dispensed against a Lumigan 0.01% prescription. Candidates now require a marketed, A-rated generic at a matching strength and dosage form.
 
 ## Validation
 
-Ten checks in `sql/03_validation.sql`, all passing on 54,818,770 rows. Two failed on the first run and both turned out to be the data being right:
+Ten checks in [sql/03_validation.sql](sql/03_validation.sql), all passing on 54,818,770 rows. Two failed on the first run and both turned out to be the data being right:
 
 - 28,583 rows at exactly $0 - Paxlovid, federally supplied at no cost to Part D
 - 282,074 rows outside the expected per-fill price band - ultra-rare disease therapies above it ($6.3B of real spend), long-off-patent generics below it
@@ -56,10 +59,10 @@ No tie-out to a national Part D total is possible: CMS excludes prescriber-drug 
     sqlutil.py               SQL statement splitter that survives comments
     metric_dictionary.md     every metric defined before the SQL was written
     memo.md                  the one-page answer
+    *.xlsx                   the savings model, with editable assumptions
+    fig*.png                 the three figures
 
 The raw CMS files are 7.4 GB and are not in this repo. Download links are in the Sources section below; point `run_pipeline.py` at them and it rebuilds everything.
-
-Figures, the Excel model and the slide deck live outside the repo for now.
 
 ## Limitations
 
